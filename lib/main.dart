@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_store/AppTheme.dart';
 import 'package:flutter_store/Routes.dart';
-import 'package:flutter_store/screens/LoginScreen.dart';
 import 'package:flutter_store/screens/RegisterScreen.dart';
 
 void main() {

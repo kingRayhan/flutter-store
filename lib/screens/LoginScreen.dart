@@ -1,5 +1,5 @@
 import 'dart:convert';
-
+import 'package:flutter_store/Consts.dart';
 import 'package:flutter_store/Helper.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
@@ -56,7 +56,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       // Make api call
       http.Response response = await http.post(
-        "http://172.17.10.34:1337/auth/local",
+        "${Consts.API_URL}/auth/local",
         body: credentials,
       );
       setState(() => _isSubmitting = false); // stop the button loading

@@ -1,6 +1,6 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
+import 'package:flutter_store/Consts.dart';
 import 'package:flutter_store/Helper.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_store/validators/FormValidator.dart';
@@ -86,7 +86,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       // Make api call
       http.Response response = await http.post(
-        "http://172.17.10.34:1337/auth/local/register",
+        "${Consts.API_URL}/auth/local/register",
         body: credentials,
       );
       setState(() => _isSubmitting = false); // stop the button loading
