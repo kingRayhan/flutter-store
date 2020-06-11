@@ -72,30 +72,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
           );
   }
 
-  void _showSnakbar() {
-    var _snakbar = SnackBar(
-      backgroundColor: Theme.of(context).primaryColor,
-      content: Text(
-        "${credentials['username']} successfully registered",
-        style: TextStyle(color: Colors.white),
-      ),
-    );
-
-    _scafoldKey.currentState.showSnackBar(_snakbar);
-  }
-
-  void _showErrorSnakbar(String msg) {
-    var _snakbar = SnackBar(
-      backgroundColor: Colors.red,
-      content: Text(
-        msg,
-        style: TextStyle(color: Colors.white),
-      ),
-    );
-    _scafoldKey.currentState.showSnackBar(_snakbar);
-    // throw Exception(msg);
-  }
-
   void _redirectAfterSuccess() {
     Future.delayed(Duration(seconds: 3), () {
       Navigator.pushReplacementNamed(context, "/login");
@@ -119,10 +95,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (response.statusCode == 200) {
         Helper.console(apiRes);
         _formKey.currentState.reset();
-        _showSnakbar();
+        Helper.SuccessSnakbar(
+            "${credentials['username']} successfully registered", _scafoldKey);
         _redirectAfterSuccess();
       } else {
-        _showErrorSnakbar(apiRes["message"][0]["messages"][0]["message"]);
+        Helper.ErrorSnakbar(
+            apiRes["message"][0]["messages"][0]["message"], _scafoldKey);
       }
     }
   }
