@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_store/Helper.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_store/validators/FormValidator.dart';
 import 'package:flutter_store/widgets/AppTextInput.dart';
@@ -12,9 +13,11 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final formKey = new GlobalKey<FormState>();
+  final _formKey = new GlobalKey<FormState>();
+  final _scafoldKey = new GlobalKey<ScaffoldState>();
 
   Map credentials = {"username": null, "email": null, "password": null};
+  bool _isSubmitting = false;
 
   Widget _userNameField() => AppTextInput(
         placeholder: "Username",
@@ -47,24 +50,79 @@ class _RegisterScreenState extends State<RegisterScreen> {
         },
       );
 
+  Widget _submitButton() {
+    return _isSubmitting
+        ? CircularProgressIndicator()
+        : Align(
+            alignment: Alignment.center,
+            child: Column(children: [
+              RaisedButton.icon(
+                onPressed: () {
+                  _handleSubmit();
+                },
+                icon: Icon(Icons.lock_open),
+                label: Text("Register"),
+              ),
+              FlatButton(
+                  onPressed: () {
+                    Navigator.pushReplacementNamed(context, "/login");
+                  },
+                  child: Text("Already have an account? login"))
+            ]),
+          );
+  }
+
+  void _showSnakbar() {
+    var _snakbar = SnackBar(
+      backgroundColor: Theme.of(context).primaryColor,
+      content: Text(
+        "${credentials['username']} successfully registered",
+        style: TextStyle(color: Colors.white),
+      ),
+    );
+
+    _scafoldKey.currentState.showSnackBar(_snakbar);
+  }
+
+  void _showErrorSnakbar(String msg) {
+    var _snakbar = SnackBar(
+      backgroundColor: Colors.red,
+      content: Text(
+        msg,
+        style: TextStyle(color: Colors.white),
+      ),
+    );
+    _scafoldKey.currentState.showSnackBar(_snakbar);
+    // throw Exception(msg);
+  }
+
+  void _redirectAfterSuccess() {
+    Future.delayed(Duration(seconds: 3), () {
+      Navigator.pushReplacementNamed(context, "/login");
+    });
+  }
+
   void _handleSubmit() async {
-    if (formKey.currentState.validate()) {
-      formKey.currentState.save();
+    if (_formKey.currentState.validate()) {
+      _formKey.currentState.save();
 
-      try {
-        http.Response response = await http.post(
-          "http://172.17.10.34:1337/auth/local/register",
-          body: {
-            "username": "john",
-            "email": "example@gmail.com",
-            "password": "rayhan123"
-          },
-        );
+      setState(() => _isSubmitting = true); // make the button loading
 
-        var apiRes = json.decode(response.body);
-        print(apiRes);
-      } catch (e) {
-        print(e);
+      // Make api call
+      http.Response response = await http.post(
+        "http://172.17.10.34:1337/auth/local/register",
+        body: credentials,
+      );
+      setState(() => _isSubmitting = false); // stop the button loading
+      var apiRes = json.decode(response.body);
+
+      if (response.statusCode == 200) {
+        Helper.console(apiRes);
+        _formKey.currentState.reset();
+        _showSnakbar();
+        _redirectAfterSuccess();
+      } else {
+        _showErrorSnakbar(apiRes["message"][0]["messages"][0]["message"]);
       }
     }
   }
@@ -73,6 +131,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     return Container(
       child: Scaffold(
+        key: _scafoldKey,
         appBar: AppBar(
           title: Text("Register"),
         ),
@@ -89,33 +148,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 child: Column(
                   children: [
                     Form(
-                      key: formKey,
+                      key: _formKey,
                       child: Column(
                         children: [
                           _userNameField(),
                           _emailField(),
                           _passwordField(),
+                          _submitButton()
                         ],
                       ),
                     ),
                     SizedBox(height: 25),
-                    Align(
-                      alignment: Alignment.center,
-                      child: Column(children: [
-                        RaisedButton.icon(
-                          onPressed: () {
-                            _handleSubmit();
-                          },
-                          icon: Icon(Icons.lock_open),
-                          label: Text("Register"),
-                        ),
-                        FlatButton(
-                            onPressed: () {
-                              Navigator.pushReplacementNamed(context, "/login");
-                            },
-                            child: Text("Already have an account? login"))
-                      ]),
-                    )
                   ],
                 ),
               )
